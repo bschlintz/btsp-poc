@@ -1,5 +1,5 @@
 import { IGraphService } from './IGraphService';
-import { Client as GraphClient, AuthenticationProvider, PageIterator, PageIteratorCallback } from "@microsoft/microsoft-graph-client";
+import { Client as GraphClient, AuthenticationProvider, LargeFileUploadTask, FileObject, LargeFileUploadTaskOptions } from "@microsoft/microsoft-graph-client";
 
 class GraphService implements IGraphService {
   private _graphClient: GraphClient;
@@ -20,26 +20,50 @@ class GraphService implements IGraphService {
     }
   }
 
-  // public async getGroup(groupId: string): Promise<IGroup> {
-  //   try {
-  //     const selectProperties = ['id', 'createdDateTime', 'displayName', 'mailNickname', 'visibility', 'classification']
-  //     const response = await this._graphClient.api(`/groups/${groupId}`).version('v1.0').select(selectProperties).get();
+  public async UploadFileToSite(siteId: string, driveId: string, path: string, name: string, blob: Buffer): Promise<any> {
+    try {
+      const uploadSession = await this._getUploadSession(siteId, driveId, path, name);   
+
+      const size = blob.byteLength - blob.byteOffset;
+      const content = blob.buffer.slice(blob.byteOffset, blob.byteOffset + blob.byteLength);
+      const fileObj: FileObject = {
+        content,
+        size,
+        name,
+      }     
+      const uploadOpts: LargeFileUploadTaskOptions = {
+        rangeSize: (1024 * 1024)
+      }
       
-  //     if (response) {
-  //       this._writeLog(`INFO: Found group ID ${groupId}`);
-  //       const group: IGroup = this._convertGroupResponseToGroup(response);
-  //       return group;
-  //     }
-  //     else {
-  //       this._writeLog(`WARNING: Unable to find group ID ${groupId}`);
-  //       return null;
-  //     }
-  //   }
-  //   catch (error) {
-  //     throw new Error(`ERROR: getGroup - Exception occured when calling the Microsoft Graph API. Message: ${error}`);
-  //   }
-  // }  
-  
+      const uploadTask = new LargeFileUploadTask(this._graphClient, fileObj, uploadSession, uploadOpts);
+      const uploadResponse = await uploadTask.upload();
+
+      return uploadResponse;
+
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  public async DownloadFileFromSite(siteId: string, driveId: string, itemId: string): Promise<any> {
+    const url = `/sites/${siteId}/drives/${driveId}/items/${itemId}/content`;
+    const response = await this._graphClient.api(url).getStream();
+    // const itemResponse = await fetch(url);
+    // const blobResult = await itemResponse.blob(); 
+    return response;
+  }
+
+  private async _getUploadSession(siteId: string, driveId: string, path: string, name: string): Promise<any> {
+    const url = `/sites/${siteId}/drives/${driveId}/root:/${path}/${name}:/createUploadSession`;
+    const sessionOptions = { 
+      "item": { 
+        "@microsoft.graph.conflictBehavior": "fail",
+      } 
+    };
+    const uploadSession = await LargeFileUploadTask.createUploadSession(this._graphClient, encodeURI(url), sessionOptions);
+    
+    return uploadSession;
+  }  
 }
 
 export default GraphService;

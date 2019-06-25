@@ -15,7 +15,8 @@
     "@azure/storage-blob": "^10.3.0",
     "@microsoft/microsoft-graph-client": "^1.7.0",
     "adal-node": "^0.1.28",
-    "jsonwebtoken": "^8.5.1"
+    "jsonwebtoken": "^8.5.1",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@azure/functions": "^1.0.2-beta2",

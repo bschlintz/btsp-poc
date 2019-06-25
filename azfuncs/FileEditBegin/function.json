@@ -6,14 +6,16 @@
       "direction": "in",
       "name": "req",
       "methods": [
-        "get",
         "post"
       ]
     },
     {
-      "name": "starter",
-      "type": "orchestrationClient",
-      "direction": "in"
+      "name": "inputBlob",
+      "type": "blob",
+      "direction": "in",
+      "path": "docs/{blobName}",
+      "connection": "AzureWebJobsStorage",
+      "dataType": "binary"
     },
     {
       "type": "http",
@@ -21,6 +23,5 @@
       "name": "$return"
     }
   ],
-  "scriptFile": "../dist/FileManager/index.js"
+  "scriptFile": "../dist/FileEditBegin/index.js"
 }
-

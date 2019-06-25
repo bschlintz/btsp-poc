@@ -6,14 +6,8 @@
       "direction": "in",
       "name": "req",
       "methods": [
-        "get",
         "post"
       ]
-    },
-    {
-      "name": "starter",
-      "type": "orchestrationClient",
-      "direction": "in"
     },
     {
       "type": "http",
@@ -21,6 +15,5 @@
       "name": "$return"
     }
   ],
-  "scriptFile": "../dist/FileManager/index.js"
+  "scriptFile": "../dist/FileEditEnd/index.js"
 }
-

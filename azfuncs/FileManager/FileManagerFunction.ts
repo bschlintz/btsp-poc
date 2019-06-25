@@ -1,9 +1,11 @@
+import * as df from "durable-functions";
 import { Context, HttpRequest } from "@azure/functions";
 import { IStorageService } from "../shared/services/IStorageService";
 import { IGraphService } from "../shared/services/IGraphService";
 import config from "../shared/config";
 import { IFileManagerResponse } from "./IFileManagerResponse";
 import { IFileInfo } from "../shared/models/IFileInfo";
+import { IHttpResponse } from "durable-functions/lib/src/classes";
 
 class FileManagerFunction {
   private _storageService: IStorageService;
@@ -19,13 +21,13 @@ class FileManagerFunction {
       case "GET":  {
         return await this._handleHttpGet(context, req);
       }
-      // case "POST": {
-      //   const group = req.body && req.body as IGroup;
-      //   if (!group || !group.customAttributes) {
-      //     return this._getJsonRes(400, { error: "You must provide a POST body when using this endpoint with HTTP POST. Example POST body: {'id': '<GROUP ID>', 'customAttributes': [{'internalName': 'department', 'value': 'Information Technology'}]}" })
-      //   }
-      //   return await this._handleHttpPost(context, req);
-      // }
+      case "POST": {
+        const blobName = req.body && req.body.blobName;
+        if (!blobName) {
+          return this._getJsonRes(400, { error: "You must provide a POST body when using this endpoint with HTTP POST. Example POST body: {'name': '<PATH TO FILENAME IN BLOB STOARGE>'}" })
+        }
+        return await this._handleHttpPost(context, req);
+      }
   
       default:
         return this._getJsonRes(400, { error: "Invalid HTTP Verb" });
@@ -34,7 +36,7 @@ class FileManagerFunction {
 
   private async _handleHttpGet(context: Context, req: HttpRequest): Promise<Response> {
     try {
-      const fileInfos: IFileInfo[] = await this._storageService.getFileList(config.AzureStorageBlobContainer);
+      const fileInfos: IFileInfo[] = await this._storageService.GetBlobList(config.AzureStorageBlobContainer);
 
       context.log(`Found ${fileInfos.length} blobs`);
       
@@ -51,24 +53,21 @@ class FileManagerFunction {
 
 
   private async _handleHttpPost(context: Context, req: HttpRequest): Promise<Response> {
-    return null;
-    // try {
-    //   const group = req.body && req.body as IGroup;
+    const blobName = req.body.blobName;
+    
+    const client = df.getClient(context);
+    
+    const instanceId = await client.startNew("FileOrchestrator", undefined, { blobName });
+    
+    context.log(`Started orchestration with ID = '${instanceId}'.`);
 
-    //   const isOwnerOfGroup = await this._adminGraphService.isUserOwnerOfGroup(this._callerUpn, group.id);
-      
-    //   if (isOwnerOfGroup) {
-    //     const updatedGroup = await this._storageService.updateGroupCustomAttributes(group.id, group.customAttributes);
-    //     return this._getJsonRes(201, { group: updatedGroup });
-    //   }
-    //   else {
-    //     return this._getJsonRes(401, { error: `User not authorized to update group details`});
-    //   }
-    // }
-    // catch (error) {
-    //   context.log(`ERROR: Exception occured in POST request: ${error}`);
-    //   return this._getJsonRes(400, { error });
-    // }
+    return this._getJsonRes(200, {data: client.createCheckStatusResponse(context.bindingData.req, instanceId)});
+    
+    
+    // const blob = await this._storageService.getBlobContent(config.AzureStorageBlobContainer, blobName);
+
+    // console.log('Blob Name', blobName);
+    // return this._getJsonRes(200, { message: blobName });
   }
 
   private _getJsonRes = (status: number, body: IFileManagerResponse): any => {
