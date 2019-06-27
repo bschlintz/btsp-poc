@@ -6,14 +6,8 @@
       "direction": "in",
       "name": "req",
       "methods": [
-        "get",
-        "post"
+        "get"
       ]
-    },
-    {
-      "name": "starter",
-      "type": "orchestrationClient",
-      "direction": "in"
     },
     {
       "type": "http",

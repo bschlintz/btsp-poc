@@ -1,24 +1,36 @@
 import { AzureFunction, Context, HttpRequest } from "@azure/functions";
-import FileManagerFunction from "./FileManagerFunction";
 import config from "../shared/config";
 import StorageService from "../shared/services/StorageService";
-import { IStorageService } from "../shared/services/IStorageService";
+import { IFileInfo } from "../shared/models/IFileInfo";
+import { JsonResponse } from '../shared/services/Utils';
 
-let storageService: IStorageService;
+let storageService: StorageService;
 
 const httpTrigger: AzureFunction = async function (context: Context, req: HttpRequest): Promise<any> {
-  context.log('HTTP trigger function processed a request.');
+  context.log('[FileManager] New Request');
 
   //Persistent across function invocations
   if (!storageService) {
     storageService = new StorageService(config.AzureStorageBlobAccount, config.AzureStorageBlobKey);
   }
   
-  const groupSiteFunction = new FileManagerFunction(storageService, null);
-  const result = await groupSiteFunction.processRequest(context, req);
-  context.log(`HTTP trigger function finished processing a request. Status Code: ${result.status}`);
+  let response;
+  try {
+    const fileInfos: IFileInfo[] = await storageService.GetBlobList(config.AzureStorageBlobContainer);
 
-  return result;
+    response = JsonResponse(200, { 
+      message: `Found ${fileInfos.length} blobs`,  
+      data: fileInfos
+    });   
+  }
+  catch (error) {
+    context.log(`[FileManager] Error Occurred`, error);
+    response = JsonResponse(400, { 
+      error: error.message
+    });
+  }   
+
+  return response;
 };
 
 export default httpTrigger;
