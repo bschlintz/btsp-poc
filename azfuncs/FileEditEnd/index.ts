@@ -27,11 +27,7 @@ const FileEditEnd: AzureFunction = async function (context: Context, req: HttpRe
   let response;
   try {
 
-    if (!isDiscard) {
-      // const timestamp = new Date().toISOString().replace(/[-.:'TZ]/g, '');
-      // const extension = blobName.substr(blobName.lastIndexOf('.'));
-      // const uniqueBlobName = `${blobName.replace(extension, '')}_${timestamp}${extension}`;
-  
+    if (!isDiscard) { 
       const fileBuffer = await graphService.DownloadFileFromSite(config.GraphSharePointSiteId, config.GraphSharePointDriveId, itemId);
       
       const uploadResult = await storageService.UploadBlobContent(config.AzureStorageBlobContainer, blobName, fileBuffer);

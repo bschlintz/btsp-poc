@@ -1,6 +1,6 @@
 {
-  "name": "azfuncs",
-  "version": "1.0.0",
+  "name": "btsp-azfuncs",
+  "version": "0.1.0",
   "description": "",
   "scripts": {
     "build": "tsc",
@@ -15,7 +15,6 @@
     "@azure/storage-blob": "^10.3.0",
     "@microsoft/microsoft-graph-client": "^1.7.0",
     "adal-node": "^0.1.28",
-    "jsonwebtoken": "^8.5.1",
     "mime-types": "^2.1.24",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7"

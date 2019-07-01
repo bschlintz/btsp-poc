@@ -1,5 +1,5 @@
 import { AuthenticationContext } from 'adal-node';
-import { AuthenticationProvider, AuthenticationProviderOptions } from "@microsoft/microsoft-graph-client";
+import { AuthenticationProvider } from "@microsoft/microsoft-graph-client";
 
 class ADALAuthenticationProvider implements AuthenticationProvider {
   private _clientId: string;
