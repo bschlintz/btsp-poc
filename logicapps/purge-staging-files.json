@@ -1,0 +1,74 @@
+{
+  "$connections": {
+      "value": {
+          "sharepointonline": {
+              "connectionId": "/subscriptions/632c63c6-468c-4e64-9689-c71288d04e70/resourceGroups/BTS-PROTO/providers/Microsoft.Web/connections/sharepointonline",
+              "connectionName": "sharepointonline",
+              "id": "/subscriptions/632c63c6-468c-4e64-9689-c71288d04e70/providers/Microsoft.Web/locations/southcentralus/managedApis/sharepointonline"
+          }
+      }
+  },
+  "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "actions": {
+          "For_each": {
+              "actions": {
+                  "Send_an_HTTP_request_to_SharePoint": {
+                      "inputs": {
+                          "body": {
+                              "method": "DELETE",
+                              "uri": "_api/web/getfilebyserverrelativeurl('/sites/<<sitename>/Shared Documents/@{items('For_each')?['{FilenameWithExtension}']}')"
+                          },
+                          "host": {
+                              "connection": {
+                                  "name": "@parameters('$connections')['sharepointonline']['connectionId']"
+                              }
+                          },
+                          "method": "post",
+                          "path": "/datasets/@{encodeURIComponent(encodeURIComponent('https://<<tenantname>>.sharepoint.com/sites/<<sitename>'))}/httprequest"
+                      },
+                      "runAfter": {},
+                      "type": "ApiConnection"
+                  }
+              },
+              "foreach": "@body('Get_files_(properties_only)')?['value']",
+              "runAfter": {
+                  "Get_files_(properties_only)": [
+                      "Succeeded"
+                  ]
+              },
+              "type": "Foreach"
+          },
+          "Get_files_(properties_only)": {
+              "inputs": {
+                  "host": {
+                      "connection": {
+                          "name": "@parameters('$connections')['sharepointonline']['connectionId']"
+                      }
+                  },
+                  "method": "get",
+                  "path": "/datasets/@{encodeURIComponent(encodeURIComponent('https://<<tenantname>>.sharepoint.com/sites/<<sitename>'))}/tables/@{encodeURIComponent(encodeURIComponent('5688690a-c878-43c4-9680-9014795b28b8'))}/getfileitems"
+              },
+              "runAfter": {},
+              "type": "ApiConnection"
+          }
+      },
+      "contentVersion": "1.0.0.0",
+      "outputs": {},
+      "parameters": {
+          "$connections": {
+              "defaultValue": {},
+              "type": "Object"
+          }
+      },
+      "triggers": {
+          "Recurrence": {
+              "recurrence": {
+                  "frequency": "Minute",
+                  "interval": 5
+              },
+              "type": "Recurrence"
+          }
+      }
+  }
+}
