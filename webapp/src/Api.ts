@@ -1,6 +1,8 @@
-const BTSP_FILEMANAGER_API_URL = "http://localhost:7071/api/FileManager";
-const BTSP_EDITBEGIN_API_URL = "http://localhost:7071/api/FileEditBegin";
-const BTSP_EDITEND_API_URL = "http://localhost:7071/api/FileEditEnd";
+// const BTSP_HOST = "http://localhost:7071";
+const BTSP_HOST = "https://btsproto.azurewebsites.net";
+const BTSP_FILEMANAGER_API_URL = `${BTSP_HOST}/api/FileManager`;
+const BTSP_EDITBEGIN_API_URL = `${BTSP_HOST}/api/FileEditBegin`;
+const BTSP_EDITEND_API_URL = `${BTSP_HOST}/api/FileEditEnd`;
 
 export interface IFilesListItem {
   key: string;
