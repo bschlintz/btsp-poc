@@ -17,13 +17,11 @@ export default class FilesList extends React.Component<{}, IFilesListState> {
 
   constructor(props: {}) {
     super(props);
-
     this._columns = [
       { key: 'operations', name: '', fieldName: 'operations', minWidth: 70, maxWidth: 70, isResizable: false },
       { key: 'name', name: 'Name', fieldName: 'name', minWidth: 300, maxWidth: 500, isResizable: true },
       { key: 'modified', name: 'Last Modified', fieldName: 'modified', minWidth: 150, maxWidth: 250, isResizable: true },
     ];
-
     this.state = {
       items: [],
       error: ''
@@ -77,9 +75,7 @@ export default class FilesList extends React.Component<{}, IFilesListState> {
   }
 
   private _startEditFile = async (item: IFilesListItem): Promise<void> => {
-
-    this._updateItem(item.key, { isLoading: true });    
-    
+    this._updateItem(item.key, { isLoading: true });        
     try {
       const editSession = await BeginEditSession(item.name);
       console.log(editSession);
@@ -91,14 +87,11 @@ export default class FilesList extends React.Component<{}, IFilesListState> {
   }
 
   private _openFile = async (item: IFilesListItem): Promise<void> => {
-    // this._updateItem(item.key, { isEditing: true });
     window.open(item.webUrl, '_blank');
   }
 
   private _stopEditFile = async (item: IFilesListItem, discardEdit: boolean = false) => {
-
     this._updateItem(item.key, { isLoading: true });
-
     try {
       await EndEditSession(item.name, item.itemId, discardEdit);
       this._updateItem(item.key, NewItem(item.name, item.modified));
@@ -161,7 +154,6 @@ export default class FilesList extends React.Component<{}, IFilesListState> {
 
   public render(): JSX.Element {
     const { items } = this.state;
-
     return (
       <Fabric>
         {this.state.error ? <div style={{color: 'red'}}>{this.state.error.toString()}</div> : ''}
